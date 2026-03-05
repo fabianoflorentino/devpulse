@@ -1,0 +1,56 @@
+services:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # devpulse-dev
+  #   Live-reload development container powered by Air.
+  #   The entire project directory is bind-mounted so edits made on the host
+  #   are instantly reflected inside the container without rebuilding.
+  # ─────────────────────────────────────────────────────────────────────────
+  devpulse-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev          # uses the "dev" stage from the multi-stage build
+    container_name: devpulse-dev
+    restart: unless-stopped
+    volumes:
+      - .:/app                              # bind-mount source for hot-reload
+      - go-cache:/root/go/pkg/mod          # persist module cache across restarts
+      - go-build-cache:/root/.cache/go-build
+    environment:
+      # Resolved by Viper in priority order:
+      #   --token flag > config file > GITHUB_TOKEN > DEVPULSE_GITHUB_TOKEN
+      GITHUB_TOKEN:             ${GITHUB_TOKEN:-}
+      DEVPULSE_OPENAI_API_KEY:  ${DEVPULSE_OPENAI_API_KEY:-}
+      DEVPULSE_OLLAMA_BASE_URL: ${DEVPULSE_OLLAMA_BASE_URL:-http://ollama:11434}
+    env_file:
+      - path: .env
+        required: false       # optional — skip if file does not exist
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # ollama
+  #   Local LLM runtime (fully offline).  Pull models with:
+  #     docker compose exec ollama ollama pull llama3
+  # ─────────────────────────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: devpulse-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  go-cache:
+  go-build-cache:
+  ollama-data:

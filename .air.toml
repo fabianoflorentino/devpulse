@@ -1,0 +1,22 @@
+# .air.toml — live-reload config for the dev container
+# https://github.com/air-verse/air
+
+root = "."
+tmp_dir = "/tmp/air"
+
+[build]
+  cmd        = "go build -o /tmp/air/devpulse ."
+  bin        = "/tmp/air/devpulse"
+  full_bin   = "/tmp/air/devpulse"
+  include_ext = ["go"]
+  exclude_dir = ["vendor", "testdata"]
+  delay      = 500  # ms
+
+[log]
+  level = "info"
+
+[color]
+  main    = "magenta"
+  watcher = "cyan"
+  build   = "yellow"
+  runner  = "green"
