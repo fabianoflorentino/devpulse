@@ -1,0 +1,17 @@
+# Binaries
+devpulse
+
+# Local environment — never commit real tokens
+.env
+
+# SQLite database created by devpulse
+*.db
+
+# macOS
+.DS_Store
+
+# Air live-reload temp dir
+/tmp/
+
+# Go build cache (only relevant if mounted as a local directory)
+vendor/
